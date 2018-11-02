@@ -9,28 +9,34 @@ from librosa import display
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
+from os import listdir, walk
 
-d,sr=librosa.load("eng_test\en-0532.wav" )
-#print(d)
-#librosa.display.specshow(d)
+X=[]
+idx = 0
+y = np.zeros(0)
+lables = {"eng": 0}
+for dir, _, files in walk("eng_test"):
+    for f in files:
+        print(f)
+        d,sr=librosa.load(dir+"\\" + f)
+        #spectrogram
+        D = librosa.amplitude_to_db(
+                np.abs(librosa.stft(d,
+                                    n_fft=184, hop_length=96)),
+                                    ref=np.max)
+        CQT = librosa.amplitude_to_db(np.abs(librosa.cqt(d, sr=sr)), ref=np.max)
+        X.append(D)
+        #mfcc
+        #mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40) 
 
-#spectrogram
-D = librosa.amplitude_to_db(
-        np.abs(librosa.stft(d,
-                            n_fft=184, hop_length=96)),
-                            ref=np.max)
-librosa.display.specshow(D, y_axis='log')
-plt.colorbar(format='%+2.0f dB')
-plt.title('Linear-frequency power spectrogram')
-plt.show()
-plt.figure()
-CQT = librosa.amplitude_to_db(np.abs(librosa.cqt(d, sr=sr)), ref=np.max)
-librosa.display.specshow(CQT, y_axis='cqt_note')
+min = 100000000
+for a in X:
+    if a.shape[1] < min:
+        min = a.shape[1]
 
-#mfcc
-mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
-librosa.display.specshow(mfccs, x_axis='time')
-plt.colorbar()
-plt.title('MFCC')
-plt.tight_layout()
-plt.show()
+x=np.zeros((len(X), 93, min))
+for arr in X:
+    x[idx, :, :] = arr[:, :min]
+    idx +=1
+    
+    
