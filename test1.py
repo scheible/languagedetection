@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 from os import listdir, walk
 
 X=[]
-idx = 0
+lang_idx = 0
 y = np.zeros(0)
-lables = {"eng": 0}
+lables = {}
 for dir, _, files in walk("eng_test"):
     for f in files:
-        print(f)
+        print(dir)
         d,sr=librosa.load(dir+"\\" + f)
         #spectrogram
         D = librosa.amplitude_to_db(
@@ -26,9 +26,14 @@ for dir, _, files in walk("eng_test"):
                                     ref=np.max)
         CQT = librosa.amplitude_to_db(np.abs(librosa.cqt(d, sr=sr)), ref=np.max)
         X.append(D)
+        if dir not in lables:
+            lables[dir]=lang_idx
+            lang_idx+=1
+        y = np.append(y, lables[dir])
         #mfcc
         #mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40) 
 
+idx=0
 min = 100000000
 for a in X:
     if a.shape[1] < min:
