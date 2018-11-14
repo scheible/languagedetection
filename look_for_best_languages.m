@@ -1,6 +1,7 @@
 clear all;
 path(path,[cd,filesep,'csv_histogram']);
 data=csvread("1_first_norm.csv");
+surf(data)
 
 sum=zeros(size(data,1),1);
 treshold=30;
@@ -23,5 +24,6 @@ for i=1:10
     [val,rank]=max(data_bis(:));
     [rank_language_against_language(i,1), rank_language_against_language(i,2)] = ind2sub(size(data_bis),rank);
     data_bis(rank_language_against_language(i,1), rank_language_against_language(i,2))=0;
+    data_bis(rank_language_against_language(i,2), rank_language_against_language(i,1))=0;
 end
     

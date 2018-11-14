@@ -41,11 +41,11 @@ with open(file_path, "r") as csvfile :
     file=csv.reader(csvfile)
     for i,row in enumerate(file) :
         if i==0 :
-            language_list=row[1:]
+            language_list=row[2:]
         else :
             phonemes_list.append(row[0])
-            Data.append(list(map(float,row[1:])))
-            print(i)
+            Data.append(list(map(float,row[2:])))
+
 
 
 with open(os.path.dirname(__file__)+"\\csv_histogram\\1_first_norm.csv", 'w',newline='') as csvfile:
@@ -57,5 +57,3 @@ with open(os.path.dirname(__file__)+"\\csv_histogram\\1_first_norm.csv", 'w',new
 
 print(language_list)
 print(phonemes_list)
-print(Data)
-print()

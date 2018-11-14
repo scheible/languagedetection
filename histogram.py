@@ -118,6 +118,11 @@ with open(os.path.dirname(__file__)+"\\csv_histogram\\0_global_file.csv", 'w',ne
         filewriter.writerow(x)
 
 
+with open(os.path.dirname(__file__)+"\\csv_histogram\\0_language_list.csv", 'w',newline='') as csvfile:
+    filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    filewriter.writerow(languages_list[1:])
+
+
 
 
 
