@@ -1,7 +1,7 @@
 clear all;
 path(path,[cd,filesep,'csv_histogram']);
 data=csvread("1_first_norm.csv");
-surf(data)
+surf(exp(20*data))
 
 sum=zeros(size(data,1),1);
 treshold=30;
