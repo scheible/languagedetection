@@ -32,7 +32,7 @@ def new_language(counter, list_phoneme, list_language,number_phoneme, lang):
 
 
 
-files_path=os.path.dirname(__file__)+"\\phonemes"
+files_path=os.path.dirname(__file__)+"\\phonemess2"
 directories=os.listdir(files_path)
 print(directories)
 phonemes_count=[[]]  # 2 dimensional array , one list per language , first one = total
@@ -72,31 +72,31 @@ for language in directories :
 
 print(languages_list)
 print(phonemes_list)
-objects = phonemes_list
-y_pos = np.arange(len(objects))
-performance = [y/number_sample_read[0] for y in phonemes_count[0]]
-plt.figure(0)
-plt.bar(y_pos, performance, align='center', alpha=0.8)
-plt.xticks(y_pos, objects)
-plt.xticks(rotation=45)
-plt.xlabel('phoneme')
-plt.title('All languages')
+# objects = phonemes_list
+# y_pos = np.arange(len(objects))
+# performance = [y/number_sample_read[0] for y in phonemes_count[0]]
+# plt.figure(0)
+# plt.bar(y_pos, performance, align='center', alpha=0.8)
+# plt.xticks(y_pos, objects)
+# plt.xticks(rotation=45)
+# plt.xlabel('phoneme')
+# plt.title('All languages')
 
 #plt.show(block=False)
-
-plt.figure(1)
-for i in range (1,len(languages_list)):
-    objects = phonemes_list
-    y_pos = np.arange(len(objects))
-    performance = [y/number_sample_read[i] for y in phonemes_count[i]]
-
-    plt.bar(y_pos, performance, align='center', alpha=0.2)
-    plt.xticks(y_pos, objects)
-    plt.xticks(rotation=45)
-    plt.xlabel('phoneme')
-    plt.title('comparaison between language')
-
-#plt.show()
+#
+# plt.figure(1)
+# for i in range (1,len(languages_list)):
+#     objects = phonemes_list
+#     y_pos = np.arange(len(objects))
+#     performance = [y/number_sample_read[i] for y in phonemes_count[i]]
+#
+#     plt.bar(y_pos, performance, align='center', alpha=0.2)
+#     plt.xticks(y_pos, objects)
+#     plt.xticks(rotation=45)
+#     plt.xlabel('phoneme')
+#     plt.title('comparaison between language')
+#
+# #plt.show()
 
 
 for numLang, language in enumerate(languages_list):

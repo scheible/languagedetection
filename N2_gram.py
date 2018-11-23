@@ -32,7 +32,7 @@ def new_language(counter, list_phoneme, list_language,number_phoneme, lang):
 
 
 
-files_path=os.path.dirname(__file__)+"\\phonemes"
+files_path=os.path.dirname(__file__)+"\\phonemess2"
 directories=os.listdir(files_path)
 print(directories)
 phonemes_count=[[]]  # 2 dimensional array , one list per language , first one = total

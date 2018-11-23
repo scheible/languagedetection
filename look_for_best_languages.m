@@ -1,5 +1,4 @@
-clear all;
-path(path,[cd,filesep,'csv_histogram']);
+path(path,[cd,filesep,'csv_N2gram']);
 data=csvread("1_first_norm.csv");
 surf(exp(20*data))
 
@@ -26,4 +25,3 @@ for i=1:10
     data_bis(rank_language_against_language(i,1), rank_language_against_language(i,2))=0;
     data_bis(rank_language_against_language(i,2), rank_language_against_language(i,1))=0;
 end
-    

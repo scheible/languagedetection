@@ -1,4 +1,4 @@
-import os
+import osgit stat
 
 
 #wreate and read csv
