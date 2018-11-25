@@ -17,7 +17,7 @@ X = []
 lang_idx = 0
 y = np.zeros(0)
 lables = {}
-for dir, _, files in walk("training_data"):
+for dir, _, files in walk("subset"):
     for f in files:
         if f[-3:] != "wav":
             continue
