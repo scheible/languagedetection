@@ -20,32 +20,36 @@ import matplotlib.pyplot as plt
 def load():
     try:
         x_train = np.load("train_mfccs.npy")
+        x_val = np.load("validation_mfccs.npy")
         x_test = np.load("test_mfccs.npy")
         y_train = np.load("train_labels.npy")
+        y_val = np.load("validation_labels.npy")
         y_test = np.load("test_labels.npy")
     except(IOError):
         return None
 
-    return (x_train, y_train), (x_test, y_test)
+    return (x_train, y_train), (x_val, y_val), (x_test, y_test)
 
 
-def save(x_train, y_train, x_test, y_test):
+def save(x_train, y_train, x_test, y_test, x_val, y_val):
     # save the mfccs
     np.save("train_mfccs.npy", x_train)
     np.save("test_mfccs.npy", x_test)
     np.save("train_labels.npy", y_train)
-    np.save("test_labels", y_test)
+    np.save("test_labels.npy", y_test)
+    np.save("validation_mfccs.npy", x_val)
+    np.save("validation_labels.npy", y_val)
 
 
 def main():
     # import data
     loaded = load()
     if loaded is None:
-        (x_train, y_train), (x_test, y_test) = input_from("subset")
+        (x_train, y_train), (x_val, y_val), (x_test, y_test) = input_from("subset")
+        save(x_train, y_train, x_test, y_test, x_val, y_val)
     else:
-        (x_train, y_train), (x_test, y_test) = loaded
+        (x_train, y_train), (x_val, y_val), (x_test, y_test) = loaded
 
-    save(x_train, y_train, x_test, y_test)
     # decide model
     model = models.Sequential()
 
@@ -84,12 +88,13 @@ def main():
     model.summary()
     # For a multi-class classification problem
 
-    cb = EarlyStopping()
+    cb = EarlyStopping(patience=3)
 
     # training use fit
     history = model.fit(train_images, train_labels, epochs=20,  batch_size=64,
-                        validation_split=0.2, callbacks=[cb])
+                        validation_data=(x_val, y_val), callbacks=[])
     plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
@@ -97,6 +102,7 @@ def main():
     plt.savefig("accuracy_dropout.png")
 
     plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
