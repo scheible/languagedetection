@@ -90,12 +90,15 @@ def main():
     # reshape data, scalling into [0, 1]
     train_images = x_train.reshape((x_train.shape[0], 40, 430, 1))
     train_images = train_images.astype('float32')/255
+    val_images = x_val.reshape((x_val.shape[0], 40, 430, 1))
+    val_images = val_images.astype('float32')/255
     test_images = x_test.reshape((x_test.shape[0], 40, 430, 1))
     test_images = test_images.astype('float32')/255
 
     # categorically encode the labels
     # Converts a class vector (integers) to binary class matrix
     train_labels = to_categorical(y_train)
+    val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
     # Before training a model, you need to configure the learning process,
@@ -109,7 +112,7 @@ def main():
 
     # training use fit
     history = model.fit(train_images, train_labels, epochs=20,  batch_size=64,
-                        validation_data=(x_val, y_val), callbacks=[])
+                        validation_data=(val_images, val_labels), callbacks=[])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
