@@ -12,7 +12,8 @@ from sklearn.model_selection import train_test_split
 
 
 def input_from(folder):
-    split = 0.8
+    test_split = 0.5
+    val_split = 0.8
     lang_idx = 0
     lables = {}
     # X_train = []
@@ -60,9 +61,9 @@ def input_from(folder):
     #     x_test[idx, :, :] = arr[:, :min]
     #     idx += 1
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=split)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=test_split)
     x_train, x_val, y_train, y_val = train_test_split(x_train,
                                                       y_train,
-                                                      train_size=split)
+                                                      train_size=val_split)
 
     return ((x_train, y_train), (x_val, y_val), (x_test, y_test))
