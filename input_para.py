@@ -8,7 +8,6 @@ Created on Fri Nov  2 11:50:53 2018
 import librosa
 import numpy as np
 from os import walk
-from sklearn.model_selection import train_test_split
 
 
 def input_from(folder):
@@ -16,54 +15,78 @@ def input_from(folder):
     val_split = 0.8
     lang_idx = 0
     lables = {}
-    # X_train = []
-    # X_test = []
-    # y_train = np.zeros(0)
-    # y_test = np.zeros(0)
-    X = []
-    y = np.zeros(0)
+    X_train = []
+    X_val = []
+    X_test = []
+    y_train = np.zeros(0)
+    y_val = np.zeros(0)
+    y_test = np.zeros(0)
+
+    files = {}
 
     for dir, _, files in walk(folder, followlinks=True):
-        # X = []
-        # y = np.zeros(0)
         for f in files:
             if f[-3:] != "wav":
                 continue
-            # TODO: perform data augmentaiton
+            if dir not in files:
+                files[dir] = []
             d, sr = librosa.load(dir + "/" + f)
-            # mfcc
-            mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
-            # print(mfccs)
-            X.append(mfccs)
-            if dir not in lables:
-                lables[dir] = lang_idx
-                lang_idx += 1
-            y = np.append(y, lables[dir])
-        # X_train.extend(X[:int(split*len(X))])
-        # print(X_train)
-        # X_test.extend(X[int(split*len(X)):])
-        # y_train = np.append(y_train, y[:int(split*y.shape[0])])
-        # y_test = np.append(y_test, y[int(split*y.shape[0]):])
+            files[dir].push((d, sr))
+    for dir in files:
+        for i, (d, sr) in enumerate(files[dir]):
+            # augment only the training set
+            if i < test_split * val_split * len(files[dir]):
+                for speed in [0.9, 1, 1.1]:
+                    x1 = d.copy()
+                    t = librosa.effects.time_stretch(d, speed)
+                    # keep same length as original;
+                    minlen = min(x1.shape[0], t.shape[0])
+                    x1 *= 0                                    # pad with zeros
+                    x1[0:minlen] = t[0:minlen]
+                    # mfcc
+                    mfccs = librosa.feature.mfcc(y=x1, sr=sr, n_mfcc=40)
+                    # print(mfccs)
+                    X_train.append(mfccs)
+                    if dir not in lables:
+                        lables[dir] = lang_idx
+                        lang_idx += 1
+                    y_train = np.append(y, lables[dir])
+            elif i < test_split * len(files[dir]):
+                mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
+                X_val.append(mfccs)
+                y_val.append(labels[dir])
+            else:
+                mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
+                X_test.append(mfccs)
+                y_test.append(lables[dir])
     
     idx = 0
     min = 100000000
-    for a in X:
+    for a in X_train:
+        if a.shape[1] < min:
+            min = a.shape[1]
+    for a in X_val:
+        if a.shape[1] < min:
+            min = a.shape[1]
+    for a in X_test:
         if a.shape[1] < min:
             min = a.shape[1]
     
-    x = np.zeros((len(X), 40, min))
-    # x_test = np.zeros((len(X_test), 40, min))
-    for arr in X:
-        x[idx, :, :] = arr[:, :min]
-        idx += 1
-    # idx = 0
-    # for arr in X_test:
-    #     x_test[idx, :, :] = arr[:, :min]
-    #     idx += 1
+    x_train = np.zeros((len(X_train), 40, min))
+    x_val = np.zeros((len(X_val), 40, min))
+    x_test = np.zeros((len(X_test), 40, min))
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=test_split)
-    x_train, x_val, y_train, y_val = train_test_split(x_train,
-                                                      y_train,
-                                                      train_size=val_split)
+    idx = 0
+    for arr in X_train:
+        x_train[idx, :, :] = arr[:, :min]
+        idx += 1
+    idx = 0
+    for arr in X_val:
+        x_val[idx, :, :] = arr[:, :min]
+        idx += 1
+    idx = 0
+    for arr in X_test:
+        x_test[idx, :, :] = arr[:, :min]
+        idx += 1
 
     return ((x_train, y_train), (x_val, y_val), (x_test, y_test))
