@@ -28,7 +28,7 @@ def input_from(folder):
         for f in files:
             if f[-3:] != "wav":
                 continue
-            if dir not in files:
+            if dir not in streams:
                 streams[dir] = []
             d, sr = librosa.load(dir + "/" + f)
             streams[dir].append((d, sr))
@@ -58,35 +58,35 @@ def input_from(folder):
             else:
                 mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
                 X_test.append(mfccs)
-                y_test.append(lables[dir])
+                y_test = np.append(y_test, lables[dir])
     
     idx = 0
-    min = 100000000
+    minl = 100000000
     for a in X_train:
-        if a.shape[1] < min:
-            min = a.shape[1]
+        if a.shape[1] < minl:
+            minl = a.shape[1]
     for a in X_val:
-        if a.shape[1] < min:
-            min = a.shape[1]
+        if a.shape[1] < minl:
+            minl = a.shape[1]
     for a in X_test:
-        if a.shape[1] < min:
-            min = a.shape[1]
+        if a.shape[1] < minl:
+            minl = a.shape[1]
     
-    x_train = np.zeros((len(X_train), 40, min))
-    x_val = np.zeros((len(X_val), 40, min))
-    x_test = np.zeros((len(X_test), 40, min))
+    x_train = np.zeros((len(X_train), 40, minl))
+    x_val = np.zeros((len(X_val), 40, minl))
+    x_test = np.zeros((len(X_test), 40, minl))
 
     idx = 0
     for arr in X_train:
-        x_train[idx, :, :] = arr[:, :min]
+        x_train[idx, :, :] = arr[:, :minl]
         idx += 1
     idx = 0
     for arr in X_val:
-        x_val[idx, :, :] = arr[:, :min]
+        x_val[idx, :, :] = arr[:, :minl]
         idx += 1
     idx = 0
     for arr in X_test:
-        x_test[idx, :, :] = arr[:, :min]
+        x_test[idx, :, :] = arr[:, :minl]
         idx += 1
 
     return ((x_train, y_train), (x_val, y_val), (x_test, y_test))
