@@ -79,25 +79,29 @@ def main():
 
     # three convolutional layers
     model.add(layers.Conv2D(32, (3, 3), activation='relu',
-                            input_shape=(40, 430, 1)))
+                            batch_input_shape=(64, 40, 430, 1)))
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
-    # model.summary()
+    #CNN to RNN
+    model.add(layers.Reshape(target_shape=(6, 104*64)))
+    model.add(layers.Dense(64, activation='relu'))
+
+    model.summary()
+    
+    # RNN layer
+    model.add(layers.LSTM(64, return_sequences=True, stateful=True,
+                          batch_input_shape=(64, 6, 64)))
 
     # convert 3D to 1D
     model.add(layers.Flatten())
-    
-    # RNN layer
-    
-    model.add(layers.LSTM(32, return_sequences=True, stateful=True))
-    model.add(layers.LSTM(32, return_sequences=True, stateful=True))
-    model.add(layers.LSTM(32, stateful=True))
+    model.summary()
+
     #model.add(Dense(10, activation='softmax'))
     # fully-connected layer
-    model.add(layers.Dense(32, activation='relu'))
+    model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dropout(0.5))
     model.add(layers.Dense(5, activation='softmax'))
 
