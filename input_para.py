@@ -22,20 +22,20 @@ def input_from(folder):
     y_val = np.zeros(0)
     y_test = np.zeros(0)
 
-    files = {}
+    streams = {}
 
     for dir, _, files in walk(folder, followlinks=True):
         for f in files:
             if f[-3:] != "wav":
                 continue
             if dir not in files:
-                files[dir] = []
+                streams[dir] = []
             d, sr = librosa.load(dir + "/" + f)
-            files[dir].push((d, sr))
-    for dir in files:
-        for i, (d, sr) in enumerate(files[dir]):
+            streams[dir].append((d, sr))
+    for dir in streams:
+        for i, (d, sr) in enumerate(streams[dir]):
             # augment only the training set
-            if i < test_split * val_split * len(files[dir]):
+            if i < test_split * val_split * len(streams[dir]):
                 for speed in [0.9, 1, 1.1]:
                     x1 = d.copy()
                     t = librosa.effects.time_stretch(d, speed)
@@ -50,11 +50,11 @@ def input_from(folder):
                     if dir not in lables:
                         lables[dir] = lang_idx
                         lang_idx += 1
-                    y_train = np.append(y, lables[dir])
-            elif i < test_split * len(files[dir]):
+                    y_train = np.append(y_train, lables[dir])
+            elif i < test_split * len(streams[dir]):
                 mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
                 X_val.append(mfccs)
-                y_val.append(labels[dir])
+                y_val = np.append(y_val, lables[dir])
             else:
                 mfccs = librosa.feature.mfcc(y=d, sr=sr, n_mfcc=40)
                 X_test.append(mfccs)
