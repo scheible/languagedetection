@@ -90,14 +90,22 @@ def main():
     # reshape data, scalling into [0, 1]
     train_images = x_train.reshape((x_train.shape[0], 40, 430, 1))
     train_images = train_images.astype('float32')/255
+    val_images = x_val.reshape((x_val.shape[0], 40, 430, 1))
+    val_images = val_images.astype('float32')/255
     test_images = x_test.reshape((x_test.shape[0], 40, 430, 1))
     test_images = test_images.astype('float32')/255
 
     # categorically encode the labels
     # Converts a class vector (integers) to binary class matrix
     train_labels = to_categorical(y_train)
+    val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
+    # if there are saved, load the weights
+    try:
+        model.load_weights("weights.hdf5")
+    except (OSError):
+        pass
     # Before training a model, you need to configure the learning process,
     model.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy',
@@ -105,11 +113,12 @@ def main():
     model.summary()
     # For a multi-class classification problem
 
-    cb = EarlyStopping(patience=3)
+    checkpoint = ModelCheckpoint("weights.hdf5", save_best_only=True)
 
     # training use fit
-    history = model.fit(train_images, train_labels, epochs=20,  batch_size=64,
-                        validation_data=(x_val, y_val), callbacks=[])
+    history = model.fit(train_images, train_labels, epochs=30,  batch_size=64,
+                        validation_data=(val_images, val_labels),
+                        callbacks=[checkpoint])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
@@ -118,6 +127,7 @@ def main():
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig("accuracy_dropout.png")
 
+    plt.figure()
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
