@@ -101,6 +101,11 @@ def main():
     val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
+    # if there are saved, load the weights
+    try:
+        model.load_weights("weights.hdf5")
+    except (OSError):
+        pass
     # Before training a model, you need to configure the learning process,
     model.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy',
@@ -108,11 +113,12 @@ def main():
     model.summary()
     # For a multi-class classification problem
 
-    cb = EarlyStopping(patience=3)
+    checkpoint = ModelCheckpoint("weights.hdf5", save_best_only=True)
 
     # training use fit
-    history = model.fit(train_images, train_labels, epochs=20,  batch_size=64,
-                        validation_data=(val_images, val_labels), callbacks=[])
+    history = model.fit(train_images, train_labels, epochs=30,  batch_size=64,
+                        validation_data=(val_images, val_labels),
+                        callbacks=[checkpoint])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
