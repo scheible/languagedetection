@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Dec  9 16:21:07 2018
-
-@author: qiany
-"""
-
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Copyright © 2018 Gianmarco Garrisi
@@ -24,11 +17,6 @@ Created on Sun Dec  9 16:21:07 2018
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""
-Created on Sun Nov 25 18:12:01 2018
-
-@author:qiany
-"""
 from keras import layers
 from keras import models
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -85,7 +73,7 @@ def main():
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
-    #CNN to RNN
+    # CNN to RNN
     model.add(layers.Reshape(target_shape=(6, 104*64)))
     model.add(layers.Dense(64, activation='relu'))
 
@@ -108,12 +96,15 @@ def main():
     # reshape data, scalling into [0, 1]
     train_images = x_train.reshape((x_train.shape[0], 40, 430, 1))
     train_images = train_images.astype('float32')/255
+    val_images = x_val.reshape((x_val.shape[0], 40, 430, 1))
+    val_images = val_images.astype('float32')/255
     test_images = x_test.reshape((x_test.shape[0], 40, 430, 1))
     test_images = test_images.astype('float32')/255
 
     # categorically encode the labels
     # Converts a class vector (integers) to binary class matrix
     train_labels = to_categorical(y_train)
+    val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
     # Before training a model, you need to configure the learning process,
@@ -126,8 +117,9 @@ def main():
     cb = EarlyStopping(patience=3)
 
     # training use fit
-    history = model.fit(train_images, train_labels, epochs=20,  batch_size=64,
-                        validation_data=(x_val, y_val), callbacks=[])
+    history = model.fit(train_images[:3136], train_labels[:3136],
+                        epochs=20,  batch_size=64,
+                        validation_data=(val_images[:256], val_labels[:256]), callbacks=[])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
@@ -145,7 +137,7 @@ def main():
     plt.savefig("loss_dropout.png")
 
     # evaluate
-    test_loss, test_acc = model.evaluate(test_images, test_labels)
+    test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512])
     print(test_acc)
 
 
