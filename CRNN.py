@@ -19,7 +19,7 @@
 
 from keras import layers
 from keras import models
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
 from input_para import input_from
 import numpy as np
@@ -27,6 +27,8 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+
+EPOCHS = 30
 
 
 def load():
@@ -87,7 +89,6 @@ def main():
     model.add(layers.Flatten())
     model.summary()
 
-    #model.add(Dense(10, activation='softmax'))
     # fully-connected layer
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dropout(0.5))
@@ -113,13 +114,22 @@ def main():
                   metrics=['accuracy'])
     model.summary()
     # For a multi-class classification problem
+    # if there are saved, load the weights
+    try:
+        model.load_weights("weights-crnn.hdf5")
+    except (OSError):
+        print("No weights saved. Will train from scratch")
+    except (ValueError):
+        print("Network changed from the last saved weights. ",
+              "Will train from scratch")
 
-    cb = EarlyStopping(patience=3)
+    checkpoint = ModelCheckpoint("weights-crnn.hdf5", save_best_only=True)
 
     # training use fit
     history = model.fit(train_images[:3136], train_labels[:3136],
-                        epochs=20,  batch_size=64,
-                        validation_data=(val_images[:256], val_labels[:256]), callbacks=[])
+                        epochs=EPOCHS, batch_size=64,
+                        validation_data=(val_images[:256], val_labels[:256]),
+                        callbacks=[checkpoint])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
@@ -135,6 +145,8 @@ def main():
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig("loss_dropout.png")
+
+    model.load_weights("weights-crnn.hdf5")
 
     # evaluate
     test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512])
