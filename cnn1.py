@@ -24,6 +24,7 @@ from keras.utils import to_categorical
 from input_para import input_from
 import numpy as np
 import matplotlib
+from sklearn.metrics import confusion_matrix
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -141,6 +142,12 @@ def main():
     # evaluate
     test_loss, test_acc = model.evaluate(test_images, test_labels,
                                          batch_size=64)
+    y_pred = model.predict(test_images, batch_size=64)
+    print(y_pred.shape)
+    y_pred_mod = np.argmax(y_pred, axis=-1)
+    y_test_mod = np.argmax(test_labels, axis=-1)
+    cnf_matrix = confusion_matrix(y_test_mod, y_pred_mod)
+    print(cnf_matrix)
     print(test_acc)
 
 

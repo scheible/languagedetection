@@ -22,6 +22,7 @@ from keras import models
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
 from input_para import input_from
+from sklearn.metrics import confusion_matrix
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -151,6 +152,12 @@ def main():
     # evaluate
     test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512],
                                          batch_size=64)
+    y_pred = model.predict(test_images[:512], batch_size=64)
+    print(y_pred.shape)
+    y_pred_mod = np.argmax(y_pred, axis=-1)
+    y_test_mod = np.argmax(test_labels[:512], axis=-1)
+    cnf_matrix = confusion_matrix(y_test_mod, y_pred_mod)
+    print(cnf_matrix)
     print(test_acc)
 
 
