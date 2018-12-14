@@ -1,17 +1,28 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Nov  2 11:50:53 2018
-
-@author: qiany
-"""
+# Copyright © 2018 Gianmarco Garrisi
+# Copyright © 2018 Qianyun Hu
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 3
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 import librosa
 import numpy as np
 from os import walk
 
 
 def input_from(folder):
-    test_split = 0.5
+    test_split = 0.7
     val_split = 0.8
     lang_idx = 0
     lables = {}

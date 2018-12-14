@@ -28,7 +28,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-EPOCHS = 30
+EPOCHS = 2
 
 
 def load():
@@ -149,7 +149,8 @@ def main():
     model.load_weights("weights-crnn.hdf5")
 
     # evaluate
-    test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512])
+    test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512],
+                                         batch_size=64)
     print(test_acc)
 
 

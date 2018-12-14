@@ -17,11 +17,6 @@
 #  along with this program; if not, write to the Free Software Foundation,
 #  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-"""
-Created on Sun Nov 25 18:12:01 2018
-
-@author:qiany
-"""
 from keras import layers
 from keras import models
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -59,6 +54,7 @@ def save(x_train, y_train, x_test, y_test, x_val, y_val):
 
 
 def main():
+    EPOCHS = 2
     # import data
     loaded = load()
     if loaded is None:
@@ -101,22 +97,27 @@ def main():
     val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
+    model.summary()
+
     # if there are saved, load the weights
     try:
         model.load_weights("weights.hdf5")
     except (OSError):
-        pass
+        print("No weights saved. Will train from scratch")
+    except (ValueError):
+        print("Network changed from the last saved weights. ",
+              "Will train from scratch")
     # Before training a model, you need to configure the learning process,
     model.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    model.summary()
     # For a multi-class classification problem
 
     checkpoint = ModelCheckpoint("weights.hdf5", save_best_only=True)
 
     # training use fit
-    history = model.fit(train_images, train_labels, epochs=30,  batch_size=64,
+    history = model.fit(train_images, train_labels, epochs=EPOCHS,
+                        batch_size=64,
                         validation_data=(val_images, val_labels),
                         callbacks=[checkpoint])
     plt.plot(history.history['acc'])
@@ -136,8 +137,10 @@ def main():
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig("loss_dropout.png")
 
+    model.load_weights("weights.hdf5")
     # evaluate
-    test_loss, test_acc = model.evaluate(test_images, test_labels)
+    test_loss, test_acc = model.evaluate(test_images, test_labels,
+                                         batch_size=64)
     print(test_acc)
 
 
