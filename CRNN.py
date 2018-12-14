@@ -32,6 +32,13 @@ import matplotlib.pyplot as plt
 EPOCHS = 2
 
 
+def shuffle(a, b):
+    assert(a.shape[0] == b.shape[0])
+    n = a.shape[0]
+    shuffled = np.random.permutation(n)
+    return (a[shuffled], b[shuffled])
+
+
 def load():
     try:
         x_train = np.load("train_mfccs.npy")
@@ -108,6 +115,11 @@ def main():
     train_labels = to_categorical(y_train)
     val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
+
+    # Shuffle data
+    train_images, train_labels = shuffle(train_images, train_labels)
+    val_images, val_labels = shuffle(val_images, val_labels)
+    test_images, test_labels = shuffle(test_images, test_labels)
 
     # Before training a model, you need to configure the learning process,
     model.compile(optimizer='rmsprop',
