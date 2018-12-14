@@ -19,7 +19,7 @@
 
 from keras import layers
 from keras import models
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
 from input_para import input_from
 import numpy as np
@@ -27,6 +27,8 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+
+EPOCHS = 2
 
 
 def load():
@@ -54,7 +56,6 @@ def save(x_train, y_train, x_test, y_test, x_val, y_val):
 
 
 def main():
-    EPOCHS = 2
     # import data
     loaded = load()
     if loaded is None:
@@ -68,16 +69,26 @@ def main():
 
     # three convolutional layers
     model.add(layers.Conv2D(32, (3, 3), activation='relu',
-                            input_shape=(40, 430, 1)))
+                            batch_input_shape=(64, 40, 430, 1)))
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 
-    # model.summary()
+    # CNN to RNN
+    model.add(layers.Reshape(target_shape=(6, 104*64)))
+    model.add(layers.Dense(64, activation='relu'))
+
+    model.summary()
+    
+    # RNN layer
+    model.add(layers.LSTM(64, return_sequences=True, stateful=True,
+                          batch_input_shape=(64, 6, 64)))
 
     # convert 3D to 1D
     model.add(layers.Flatten())
+    model.summary()
+
     # fully-connected layer
     model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dropout(0.5))
@@ -97,28 +108,27 @@ def main():
     val_labels = to_categorical(y_val)
     test_labels = to_categorical(y_test)
 
+    # Before training a model, you need to configure the learning process,
+    model.compile(optimizer='rmsprop',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
     model.summary()
-
+    # For a multi-class classification problem
     # if there are saved, load the weights
     try:
-        model.load_weights("weights.hdf5")
+        model.load_weights("weights-crnn.hdf5")
     except (OSError):
         print("No weights saved. Will train from scratch")
     except (ValueError):
         print("Network changed from the last saved weights. ",
               "Will train from scratch")
-    # Before training a model, you need to configure the learning process,
-    model.compile(optimizer='rmsprop',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
-    # For a multi-class classification problem
 
-    checkpoint = ModelCheckpoint("weights.hdf5", save_best_only=True)
+    checkpoint = ModelCheckpoint("weights-crnn.hdf5", save_best_only=True)
 
     # training use fit
-    history = model.fit(train_images, train_labels, epochs=EPOCHS,
-                        batch_size=64,
-                        validation_data=(val_images, val_labels),
+    history = model.fit(train_images[:3136], train_labels[:3136],
+                        epochs=EPOCHS, batch_size=64,
+                        validation_data=(val_images[:256], val_labels[:256]),
                         callbacks=[checkpoint])
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
@@ -128,7 +138,6 @@ def main():
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig("accuracy_dropout.png")
 
-    plt.figure()
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model loss')
@@ -137,9 +146,10 @@ def main():
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig("loss_dropout.png")
 
-    model.load_weights("weights.hdf5")
+    model.load_weights("weights-crnn.hdf5")
+
     # evaluate
-    test_loss, test_acc = model.evaluate(test_images, test_labels,
+    test_loss, test_acc = model.evaluate(test_images[:512], test_labels[:512],
                                          batch_size=64)
     print(test_acc)
 
