@@ -197,6 +197,14 @@ def kullback_leibler(sample, all_phoneme, global_histogram):
     return np.argmin(results)
 
 
+def kullback_leibler_languages(histogram1,histogram2):
+    results = 0
+    for phon in range(len(histogram1)):
+            if (histogram1[phon] != 0) and (histogram2[phon] != 0):
+                results += histogram1[phon]*np.log(histogram1[phon]/histogram2[phon])
+    return results
+
+
 def accuracy(CM):
     total = np.sum(CM)
     true = 0.0
@@ -264,20 +272,20 @@ print(phonemes)
 print(histogram.shape)
 
 
-first_norm=np.empty([5,5])
+result=np.empty([5,5])
+print(type(histogram))
 for i in range(5):
     for j in range(5):
         if i!=j:
-            for k in range(len(phonemes)):
-                first_norm[i][j]=first_norm[i][j]+np.abs(histogram[i][k]-histogram[j][k])
-            first_norm[j][i]=first_norm[i][j]
+            result[i][j]=kullback_leibler_languages(histogram[i], histogram[j])
+            result[j][i]=result[i][j]
 
 
 import csv
-with open(os.path.dirname(__file__)+"/1_first_norm_few_languages.csv", 'w',newline='') as csvfile:
+with open(os.path.dirname(__file__)+"/1_kullback-leibler_few_languages.csv", 'w',newline='') as csvfile:
     print("entree file")
     filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-    norm=first_norm
+    norm=result
     for line in norm :
         filewriter.writerow(line)
 
