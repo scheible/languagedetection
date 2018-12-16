@@ -1,6 +1,14 @@
-path(path,[cd,filesep,'csv_N2gram']);
-data=csvread("1_first_norm.csv");
-surf(exp(20*data))
+% path(path,[cd,filesep,'csv_histogram']);
+data=csvread("1_first_norm_few_languages.csv");
+h=bar3(data,0.5)
+
+for i = 1:length(h)
+     zdata = get(h(i),'Zdata');
+     set(h(i),'Cdata',zdata)
+end
+set(gca,'xtick',[1:5],'xticklabel',{'Arabic','Dutch','Korean', 'Polish', 'Romanian'})
+set(gca,'ytick',[1:5],'yticklabel',{'Arabic','Dutch','Korean', 'Polish', 'Romanian'})
+
 
 sum=zeros(size(data,1),1);
 treshold=30;

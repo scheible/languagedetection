@@ -1,4 +1,4 @@
-path(path,[cd,filesep,'csv_N2gram']);
+path(path,[cd,filesep,'csv_histogram']);
 run open_list_languages
 number_of_language_in_list=zeros(5,1);
 

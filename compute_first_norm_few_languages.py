@@ -209,8 +209,8 @@ def accuracy(CM):
 def test(x, y, histograms, all_phonemes):
     confusion_matrix = np.zeros((len(histograms), len(histograms)))
     for num_sample, sample in enumerate(x):
-        #predicted = likelihood(sample, all_phonemes, histograms)
-        predicted = kullback_leibler(sample, all_phonemes, histograms)
+        predicted = likelihood(sample, all_phonemes, histograms)
+        # predicted = kullback_leibler(sample, all_phonemes, histograms)
         confusion_matrix[y[num_sample]][predicted] += 1
     return confusion_matrix
 
@@ -247,28 +247,41 @@ def test_2gram(x, y, histograms, all_phonemes):
 
 
 path = os.path.dirname(__file__)+"/phonemes_few_languages"
-split = 0.7
-
+#split = 0.7
+split=1
 (x_train, y_train), (x_test, y_test), language_list, number_of_sample_per_language = split_data(path, split)
 
 print(len(x_train))
 print(len(y_train))
-print(len(x_test))
-print(len(y_test))
 print(language_list)
 print(number_of_sample_per_language)
 print(x_train[0])
-print(x_test[-1])
 print(y_train[0])
-print(y_test[-1])
+
 
 histogram, phonemes = make_histogram(x_train, y_train, language_list)
 print(phonemes)
 print(histogram.shape)
-print(histogram)
 
 
-result = test(x_test, y_test, histogram, phonemes)
-print(result)
-acc = accuracy(result)
-print(acc)
+first_norm=np.empty([5,5])
+for i in range(5):
+    for j in range(5):
+        if i!=j:
+            for k in range(len(phonemes)):
+                first_norm[i][j]=first_norm[i][j]+np.abs(histogram[i][k]-histogram[j][k])
+            first_norm[j][i]=first_norm[i][j]
+
+
+import csv
+with open(os.path.dirname(__file__)+"/1_first_norm_few_languages.csv", 'w',newline='') as csvfile:
+    print("entree file")
+    filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    norm=first_norm
+    for line in norm :
+        filewriter.writerow(line)
+
+#result = test(x_test, y_test, histogram, phonemes)
+#print(result)
+#acc = accuracy(result)
+#print(acc)
