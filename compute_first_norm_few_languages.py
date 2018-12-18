@@ -116,38 +116,7 @@ def make_histogram_sample(sample, all_phonemes):
     return histogram
 
 
-def make_2gram_sample(sample, all_phonemes):
-    histogram = np.zeros(len(all_phonemes))
-    number_phoneme_read = 0
-    temp = ""
-    first_space=True
-    for letter in sample:
-        if letter != " ":
-            temp = temp + letter
-        else:
-            if first_space:
-                first_space = False
-                temp = temp + "-"
-            else:
-                first_space = True
-                found = False
-                for num_phoneme, phoneme in enumerate(all_phonemes):
-                    if phoneme == temp:
-                        found = True
-                        # print(num_language)
-                        # print(rang_phoneme)
-                        # print(np.asarray(phonemes_count).shape)
-                        histogram[num_phoneme] += 1
-                        break
-                if not found:
-                    print("new phoneme in the sample")
-                temp = ""
-                number_phoneme_read += 1
-    histogram = histogram/number_phoneme_read
-    return histogram
-
-
-def make_2gram(train, labels, Languages):
+def make_N2gram(train, labels, Languages):
     phonemes_count = []  # 2 dimensional array , one list per language
     number_phoneme_read = []  # one per language
     for i in range(len(Languages)):
@@ -217,36 +186,23 @@ def likelihood(sample, all_phonemes, histograms):
     # print(temp_result)
     return np.argmax(temp_result)
 
-def likelihood_2gram(sample, all_phonemes, histograms):
-    histogram_sample = make_2gram_sample(sample, all_phonemes)
-    results = np.zeros(len(histograms))
-    for lang in range(len(histograms)):
-        for phon in range(len(histogram_sample)):
-            if (histogram_sample[phon] != 0) and (histograms[lang][phon] != 0):
-                results[lang] = results[lang]*histograms[lang][phon]
-    print(results)
-    return np.argmax(results)
-
 
 def kullback_leibler(sample, all_phoneme, global_histogram):
-    histogram_sample = make_2gram_sample(sample, all_phoneme)
-    results = np.zeros(len(global_histogram))
-    for lang in range(len(global_histogram)):
-        for phon in range(len(histogram_sample)):
-            if (histogram_sample[phon] != 0) and (global_histogram[lang][phon] != 0):
-                results[lang] += histogram_sample[phon] * np.log(histogram_sample[phon] / global_histogram[lang][phon])
-
-    return np.argmin(results)
-
-
-def kullback_leibler_2gram(sample, all_phoneme, global_histogram):
-    histogram_sample = make_2gram_sample(sample, all_phoneme)
+    histogram_sample = make_histogram_sample(sample, all_phoneme)
     results = np.zeros(len(global_histogram))
     for lang in range(len(global_histogram)):
         for phon in range(len(histogram_sample)):
             if (histogram_sample[phon] != 0) and (global_histogram[lang][phon] != 0):
                 results[lang] += histogram_sample[phon]*np.log(histogram_sample[phon]/global_histogram[lang][phon])
     return np.argmin(results)
+
+
+def kullback_leibler_languages(histogram1,histogram2):
+    results = 0
+    for phon in range(len(histogram1)):
+            if (histogram1[phon] != 0) and (histogram2[phon] != 0):
+                results += histogram1[phon]*np.log(histogram1[phon]/histogram2[phon])
+    return results
 
 
 def accuracy(CM):
@@ -261,45 +217,79 @@ def accuracy(CM):
 def test(x, y, histograms, all_phonemes):
     confusion_matrix = np.zeros((len(histograms), len(histograms)))
     for num_sample, sample in enumerate(x):
-        #predicted = likelihood(sample, all_phonemes, histograms)
-        predicted = kullback_leibler(sample, all_phonemes, histograms)
+        predicted = likelihood(sample, all_phonemes, histograms)
+        # predicted = kullback_leibler(sample, all_phonemes, histograms)
         confusion_matrix[y[num_sample]][predicted] += 1
     return confusion_matrix
 
 
 def test_2gram(x, y, histograms, all_phonemes):
-    confusion_matrix = np.zeros((len(histograms), len(histograms)))
-    for num_sample, sample in enumerate(x):
-        predicted = likelihood_2gram(sample, all_phonemes, histograms)
-        #predicted = kullback_leibler_2gram(sample, all_phonemes, histograms)
-        confusion_matrix[y[num_sample]][predicted] += 1
+    temp_result=np.full(len(histograms),1.0)
+    confusion_matrix=np.zeros((len(histograms),len(histograms)))
+    temp=""
+    first_space=True
+    for num_sample,sample in enumerate(x) :
+        for letter in sample:
+            if letter != " ":
+                temp = temp + letter
+            else:
+                if first_space:
+                    first_space = False
+                    temp = temp + "-"
+                else:
+                    first_space = True
+                    found = False
+                    for num_phoneme, phoneme in enumerate(all_phonemes):
+                        if phoneme == temp:
+                            temp_result=likelihood(temp_result,histogram,num_phoneme)
+                            found=True
+                            break
+                    if found==False:
+                        temp_result=np.zeros(len(histograms),dtype=np.float32)
+                        print("unfound phoneme")
+                    temp = ""
+        #print(temp_result)
+        confusion_matrix[y[num_sample]][np.argmax(temp_result)]+=1
+        temp_result = np.full(len(histograms),1.0)
     return confusion_matrix
 
 
-
 path = os.path.dirname(__file__)+"/phonemes_few_languages"
-split = 0.7
-
+#split = 0.7
+split=1
 (x_train, y_train), (x_test, y_test), language_list, number_of_sample_per_language = split_data(path, split)
 
 print(len(x_train))
 print(len(y_train))
-print(len(x_test))
-print(len(y_test))
 print(language_list)
 print(number_of_sample_per_language)
 print(x_train[0])
-print(x_test[-1])
 print(y_train[0])
-print(y_test[-1])
 
-histogram, phonemes = make_2gram(x_train, y_train, language_list)
+
+histogram, phonemes = make_histogram(x_train, y_train, language_list)
 print(phonemes)
 print(histogram.shape)
-print(histogram)
 
 
-result = test_2gram(x_test, y_test, histogram, phonemes)
-print(result)
-acc = accuracy(result)
-print(acc)
+result=np.empty([5,5])
+print(type(histogram))
+for i in range(5):
+    for j in range(5):
+        if i!=j:
+            result[i][j]=kullback_leibler_languages(histogram[i], histogram[j])
+            result[j][i]=result[i][j]
+
+
+import csv
+with open(os.path.dirname(__file__)+"/1_kullback-leibler_few_languages.csv", 'w',newline='') as csvfile:
+    print("entree file")
+    filewriter = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    norm=result
+    for line in norm :
+        filewriter.writerow(line)
+
+#result = test(x_test, y_test, histogram, phonemes)
+#print(result)
+#acc = accuracy(result)
+#print(acc)
