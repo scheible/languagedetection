@@ -21,6 +21,7 @@ from keras import layers
 from keras import models
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
+from keras.regularizers import l1_l2
 from input_para import input_from
 from sklearn.metrics import confusion_matrix
 import numpy as np
@@ -29,7 +30,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-EPOCHS = 2
+EPOCHS = 30
 
 
 def shuffle(a, b):
@@ -77,30 +78,38 @@ def main():
 
     # three convolutional layers
     model.add(layers.Conv2D(32, (3, 3), activation='relu',
-                            batch_input_shape=(64, 40, 430, 1)))
+                            batch_input_shape=(64, 40, 430, 1),
+                            kernel_regularizer=l1_l2(l1=0.001, l2=0.001)))
     model.add(layers.MaxPooling2D(2, 2))
-    model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(32, (3, 3), activation='relu',
+                            kernel_regularizer=l1_l2(l1=0.001, l2=0.001)))
     model.add(layers.MaxPooling2D(2, 2))
-    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu',
+                            kernel_regularizer=l1_l2(l1=0.001, l2=0.001)))
 
     # CNN to RNN
     model.add(layers.Reshape(target_shape=(6, 104*64)))
     model.add(layers.Dense(64, activation='relu'))
 
     model.summary()
-    
+
     # RNN layer
     model.add(layers.LSTM(64, return_sequences=True, stateful=True,
-                          batch_input_shape=(64, 6, 64)))
-
+                          batch_input_shape=(64, 6, 64),
+                          kernel_regularizer=l1_l2(0.001, 0.001)))
+    model.add(layers.LSTM(64, return_sequences=True, stateful=True,
+                          batch_input_shape=(64, 6, 64),
+                          kernel_regularizer=l1_l2(0.001, 0.001)))
     # convert 3D to 1D
     model.add(layers.Flatten())
     model.summary()
 
     # fully-connected layer
-    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(64, activation='relu',
+                           kernel_regularizer=l1_l2(0.001, 0.001)))
     model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(5, activation='softmax'))
+    model.add(layers.Dense(5, activation='softmax',
+                           kernel_regularizer=l1_l2(0.001, 0.001)))
 
     # reshape data, scalling into [0, 1]
     train_images = x_train.reshape((x_train.shape[0], 40, 430, 1))

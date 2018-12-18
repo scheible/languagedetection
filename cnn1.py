@@ -55,7 +55,7 @@ def save(x_train, y_train, x_test, y_test, x_val, y_val):
 
 
 def main():
-    EPOCHS = 2
+    EPOCHS = 30
     # import data
     loaded = load()
     if loaded is None:
@@ -70,10 +70,13 @@ def main():
     # three convolutional layers
     model.add(layers.Conv2D(32, (3, 3), activation='relu',
                             input_shape=(40, 430, 1)))
+    model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(32, (3, 3), activation='relu'))
+    model.add(layers.BatchNormalization())
     model.add(layers.MaxPooling2D(2, 2))
     model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.BatchNormalization())
 
     # model.summary()
 
