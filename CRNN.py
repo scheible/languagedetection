@@ -91,8 +91,6 @@ def main():
     model.add(layers.Reshape(target_shape=(6, 104*64)))
     model.add(layers.Dense(64, activation='relu'))
 
-    model.summary()
-
     # RNN layer
     model.add(layers.LSTM(64, return_sequences=True, stateful=True,
                           batch_input_shape=(64, 6, 64),
@@ -102,7 +100,6 @@ def main():
                           kernel_regularizer=l1_l2(0.001, 0.001)))
     # convert 3D to 1D
     model.add(layers.Flatten())
-    model.summary()
 
     # fully-connected layer
     model.add(layers.Dense(64, activation='relu',
